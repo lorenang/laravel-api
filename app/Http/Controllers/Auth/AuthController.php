@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Auth;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +16,7 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:100',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -35,18 +34,20 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|string',
+        $validated = $request->validate([
+            'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $token = $user->createToken('YourAppName')->plainTextToken;
-
-            return response()->json(['token' => $token], 200);
+        if (!auth()->attempt($validated)) {
+            throw ValidationException::withMessages([
+                'email' => ['Las credenciales proporcionadas son incorrectas.'],
+            ]);
         }
 
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        $user = auth()->user();
+        $token = $user->createToken('token-name')->plainTextToken;
+
+        return response()->json(['token' => $token, 'user' => $user]);
     }
 }

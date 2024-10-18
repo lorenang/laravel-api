@@ -13,7 +13,7 @@ class AlumnoController extends Controller
      */
     public function index()
     {
-        $alumnos = Alumnos::paginate(10);
+        $alumnos = Alumnos::all();
         return response()->json($alumnos);
     }
 
